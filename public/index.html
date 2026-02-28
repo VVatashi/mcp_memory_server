@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>MCP Memory</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <header class="header">
+        <div>
+          <div class="eyebrow">MCP Memory Server</div>
+          <h1>Факты проекта</h1>
+        </div>
+        <button id="reloadBtn" class="btn ghost">Обновить</button>
+      </header>
+
+      <section class="panel">
+        <form id="memoryForm" class="form">
+          <input type="hidden" id="editId" />
+          <label class="field">
+            <span>Факт</span>
+            <textarea id="contentInput" rows="4" placeholder="Короткий факт о проекте"></textarea>
+          </label>
+          <label class="field">
+            <span>Теги (через запятую)</span>
+            <input id="tagsInput" type="text" placeholder="backend, api, infra" />
+          </label>
+          <div class="actions">
+            <button id="submitBtn" type="submit" class="btn primary">Добавить</button>
+            <button id="cancelBtn" type="button" class="btn ghost hidden">Отмена</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="list-head">
+          <div class="title">Список фактов</div>
+          <div id="count" class="count">0</div>
+        </div>
+        <div id="list" class="list"></div>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+  </html>
