@@ -10,14 +10,19 @@ pip install -r requirements.txt
 uvicorn server:app --reload --port 3123
 ```
 
-## Prompt
+## API
 
-```
-У тебя есть доступ к инструменту memory.
+### MCP (JSON-RPC)
 
-Правила:
-- Всегда сначала вызывай memory.search перед ответом.
-- Если узнаёшь новую важную информацию о проекте — вызывай memory.store.
-- Не сохраняй временные данные и куски кода.
-- Используй найденную память для ответа.
-```
+Base URL: `/mcp/{codename}`
+
+### REST
+
+- `GET /api/projects` — список проектов (collections).
+- `POST /api/projects` — создать проект `{ "codename": "my_project" }`.
+- `GET /api/projects/{codename}/memories`
+- `GET /api/projects/{codename}/memories/{id}`
+- `GET /api/projects/{codename}/memories/search?query=...&n_results=...`
+- `POST /api/projects/{codename}/memories`
+- `PUT /api/projects/{codename}/memories/{id}`
+- `DELETE /api/projects/{codename}/memories/{id}`

@@ -4,9 +4,13 @@ const form = document.getElementById("memoryForm");
 const contentInput = document.getElementById("contentInput");
 const tagsInput = document.getElementById("tagsInput");
 const editIdInput = document.getElementById("editId");
+const projectSelect = document.getElementById("projectSelect");
+const newProjectInput = document.getElementById("newProjectInput");
+const createProjectBtn = document.getElementById("createProjectBtn");
 const submitBtn = document.getElementById("submitBtn");
 const cancelBtn = document.getElementById("cancelBtn");
 const reloadBtn = document.getElementById("reloadBtn");
+const projectStorageKey = "mcp_memory_project";
 
 function parseTags(value) {
   return value
@@ -31,12 +35,63 @@ function clearEditMode() {
   cancelBtn.classList.add("hidden");
 }
 
+function getProject() {
+  return projectSelect.value.trim();
+}
+
+function apiPath(path) {
+  const project = getProject();
+  if (!project) {
+    return null;
+  }
+  return `/api/projects/${project}${path}`;
+}
+
 async function fetchMemories() {
-  const res = await fetch("/api/memories");
+  const path = apiPath("/memories");
+  if (!path) {
+    return [];
+  }
+  const res = await fetch(path);
   if (!res.ok) {
     throw new Error("Failed to fetch memories");
   }
   return res.json();
+}
+
+async function fetchProjects() {
+  const res = await fetch("/api/projects");
+  if (!res.ok) {
+    throw new Error("Failed to fetch projects");
+  }
+  return res.json();
+}
+
+function setProjectsList(projects) {
+  const current = getProject() || localStorage.getItem(projectStorageKey) || "";
+  projectSelect.innerHTML = "";
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = "Выберите проект";
+  projectSelect.appendChild(placeholder);
+  projects.forEach((project) => {
+    const option = document.createElement("option");
+    option.value = project;
+    option.textContent = project;
+    projectSelect.appendChild(option);
+  });
+  if (current) {
+    projectSelect.value = current;
+  }
+}
+
+async function refreshProjects() {
+  try {
+    const projects = await fetchProjects();
+    setProjectsList(projects);
+  } catch (err) {
+    setProjectsList([]);
+  }
 }
 
 function render(memories) {
@@ -89,10 +144,15 @@ function render(memories) {
     deleteBtn.className = "btn ghost";
     deleteBtn.textContent = "Удалить";
     deleteBtn.addEventListener("click", async () => {
+      const project = getProject();
+      if (!project) {
+        alert("Выберите проект");
+        return;
+      }
       if (!confirm("Удалить факт?")) {
         return;
       }
-      await fetch(`/api/memories/${memory.id}`, { method: "DELETE" });
+      await fetch(`/api/projects/${project}/memories/${memory.id}`, { method: "DELETE" });
       await load();
     });
     actions.appendChild(deleteBtn);
@@ -104,6 +164,15 @@ function render(memories) {
 
 async function load() {
   try {
+    if (!getProject()) {
+      listEl.innerHTML = "";
+      const empty = document.createElement("div");
+      empty.className = "card";
+      empty.textContent = "Выберите проект, чтобы увидеть факты.";
+      listEl.appendChild(empty);
+      countEl.textContent = "0";
+      return;
+    }
     const memories = await fetchMemories();
     render(memories);
   } catch (err) {
@@ -117,6 +186,11 @@ async function load() {
 
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
+  const project = getProject();
+  if (!project) {
+    alert("Выберите проект");
+    return;
+  }
   const content = contentInput.value.trim();
   const tags = parseTags(tagsInput.value);
   if (!content) {
@@ -126,13 +200,13 @@ form.addEventListener("submit", async (event) => {
 
   const editId = editIdInput.value.trim();
   if (editId) {
-    await fetch(`/api/memories/${editId}`, {
+    await fetch(`/api/projects/${project}/memories/${editId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ content, tags }),
     });
   } else {
-    await fetch("/api/memories", {
+    await fetch(`/api/projects/${project}/memories`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ content, tags }),
@@ -151,4 +225,41 @@ reloadBtn.addEventListener("click", () => {
   load();
 });
 
-load();
+projectSelect.addEventListener("change", () => {
+  const value = projectSelect.value.trim();
+  if (value) {
+    localStorage.setItem(projectStorageKey, value);
+  }
+  clearEditMode();
+  load();
+});
+
+createProjectBtn.addEventListener("click", async () => {
+  const codename = newProjectInput.value.trim();
+  if (!codename) {
+    alert("Введите код проекта");
+    return;
+  }
+  const res = await fetch("/api/projects", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ codename }),
+  });
+  if (!res.ok) {
+    alert("Не удалось создать проект");
+    return;
+  }
+  newProjectInput.value = "";
+  await refreshProjects();
+  projectSelect.value = codename;
+  localStorage.setItem(projectStorageKey, codename);
+  clearEditMode();
+  load();
+});
+
+const savedProject = localStorage.getItem(projectStorageKey);
+if (savedProject) {
+  projectSelect.value = savedProject;
+}
+
+refreshProjects().then(load);

@@ -60,8 +60,12 @@ def test_collection():
 
 
 @pytest.fixture
-def client(test_collection):
-    server._collection = test_collection
+def codename():
+    return f"test_{uuid.uuid4().hex}"
+
+
+@pytest.fixture
+def client(test_collection, codename):
+    server.set_test_collection(codename, test_collection)
     with TestClient(server.app) as test_client:
         yield test_client
-    server._collection = None

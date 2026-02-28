@@ -20,6 +20,16 @@
         <form id="memoryForm" class="form">
           <input type="hidden" id="editId" />
           <label class="field">
+            <span>Проект</span>
+            <div class="project-row">
+              <select id="projectSelect">
+                <option value="">Выберите проект</option>
+              </select>
+              <input id="newProjectInput" type="text" placeholder="Новый код проекта" />
+              <button id="createProjectBtn" type="button" class="btn ghost">Создать</button>
+            </div>
+          </label>
+          <label class="field">
             <span>Факт</span>
             <textarea id="contentInput" rows="4" placeholder="Короткий факт о проекте"></textarea>
           </label>

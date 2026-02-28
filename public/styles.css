@@ -69,7 +69,8 @@ h1 {
 }
 
 textarea,
-input[type="text"] {
+input[type="text"],
+select {
   width: 100%;
   padding: 12px 14px;
   border-radius: 12px;
@@ -82,6 +83,13 @@ input[type="text"] {
 .actions {
   display: flex;
   gap: 12px;
+}
+
+.project-row {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr auto;
+  gap: 10px;
+  align-items: center;
 }
 
 .btn {
@@ -169,5 +177,9 @@ input[type="text"] {
 
   .actions {
     flex-wrap: wrap;
+  }
+
+  .project-row {
+    grid-template-columns: 1fr;
   }
 }
